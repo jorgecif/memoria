@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Juego de Matching: IA Generativa</title>
+  <style>
+    /* Estilos generales */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f0f8ff;
+    }
+    header {
+      text-align: center;
+      padding: 20px;
+    }
+    header h1 {
+      margin: 0;
+    }
+    #timer {
+      font-size: 1.2em;
+      margin: 10px 0;
+    }
+    #reset-btn {
+      padding: 10px 20px;
+      background-color: #ff9800;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #reset-btn:hover {
+      background-color: #e68900;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 10px;
+    }
+    .card {
+      background-color: #cce5ff;
+      border: 2px solid #007bff;
+      border-radius: 8px;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.3s, background-color 0.3s;
+      position: relative;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card.flipped, .card.matched {
+      background-color: #ffffff;
+      border-color: #4caf50;
+    }
+    .card-content {
+      padding: 10px;
+      color: #333;
+      font-size: 0.9em;
+      text-align: center;
+    }
+    .card-back {
+      background-color: #007bff;
+      width: 100%;
+      height: 100%;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Juego de Matching: IA Generativa</h1>
+    <div id="timer">Tiempo: 0 seg</div>
+    <button id="reset-btn">Reiniciar Juego</button>
+  </header>
+  <div class="card-grid" id="card-grid">
+    <!-- Las tarjetas se inyectarán aquí -->
+  </div>
+  <script>
+    // Array de 10 conceptos simples directamente relacionados con IA generativa
+    const concepts = [
+      { id: 1, concept: "Generador de Imágenes", explanation: "Crea imágenes a partir de descripciones de texto." },
+      { id: 2, concept: "Generador de Texto", explanation: "Produce historias o respuestas basadas en instrucciones." },
+      { id: 3, concept: "Generador de Música", explanation: "Compone melodías originales usando IA." },
+      { id: 4, concept: "Estilo Artístico", explanation: "Aplica estilos de arte a imágenes generadas." },
+      { id: 5, concept: "Conversación IA", explanation: "Interactúa generando respuestas coherentes en chat." },
+      { id: 6, concept: "Prompt", explanation: "Instrucción inicial que guía la creación de contenido." },
+      { id: 7, concept: "Entrenamiento", explanation: "Proceso de enseñar a la IA con ejemplos." },
+      { id: 8, concept: "Red Neuronal", explanation: "Modelo matemático inspirado en el cerebro." },
+      { id: 9, concept: "Datos de Entrada", explanation: "Información que la IA usa para generar resultados." },
+      { id: 10, concept: "Creatividad Artificial", explanation: "Capacidad de la IA para crear contenido nuevo." }
+    ];
+
+    let cards = [];
+    let selectedCards = [];
+    let startTime = 0;
+    let timerInterval;
+
+    // Función para mezclar un array (algoritmo Fisher-Yates)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    // Genera las tarjetas a partir de los conceptos (2 tarjetas por concepto)
+    function generateCards() {
+      let cardArray = [];
+      concepts.forEach(item => {
+        cardArray.push({
+          id: `${item.id}-concept`,
+          pairId: item.id,
+          content: item.concept,
+          type: "concept",
+          isFlipped: false,
+          isMatched: false
+        });
+        cardArray.push({
+          id: `${item.id}-explanation`,
+          pairId: item.id,
+          content: item.explanation,
+          type: "explanation",
+          isFlipped: false,
+          isMatched: false
+        });
+      });
+      return shuffleArray(cardArray);
+    }
+
+    // Renderiza las tarjetas en la cuadrícula
+    function renderCards() {
+      const cardGrid = document.getElementById('card-grid');
+      cardGrid.innerHTML = ''; // Limpia tarjetas previas
+      cards.forEach((card, index) => {
+        const cardElement = document.createElement('div');
+        cardElement.classList.add('card');
+        cardElement.setAttribute('data-index', index);
+        if (card.isFlipped || card.isMatched) {
+          cardElement.classList.add('flipped');
+        }
+        // Contenido interno de la tarjeta
+        const contentDiv = document.createElement('div');
+        contentDiv.classList.add('card-content');
+        if (card.isFlipped || card.isMatched) {
+          contentDiv.textContent = card.content;
+        } else {
+          // Tarjeta volteada (parte trasera)
+          const backDiv = document.createElement('div');
+          backDiv.classList.add('card-back');
+          cardElement.appendChild(backDiv);
+        }
+        cardElement.appendChild(contentDiv);
+        // Añade evento click a la tarjeta
+        cardElement.addEventListener('click', onCardClick);
+        cardGrid.appendChild(cardElement);
+      });
+    }
+
+    // Actualiza el temporizador en pantalla
+    function updateTimer() {
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+      document.getElementById('timer').textContent = `Tiempo: ${elapsedSeconds} seg`;
+    }
+
+    // Maneja el clic en una tarjeta
+    function onCardClick(e) {
+      const cardElement = e.currentTarget;
+      const index = cardElement.getAttribute('data-index');
+      const card = cards[index];
+      if (card.isFlipped || card.isMatched || selectedCards.length === 2) return;
+      // Voltea la tarjeta
+      card.isFlipped = true;
+      selectedCards.push({ card, index });
+      renderCards();
+      // Si hay dos tarjetas seleccionadas, verificar si hacen match
+      if (selectedCards.length === 2) {
+        checkForMatch();
+      }
+    }
+
+    // Verifica si las dos tarjetas seleccionadas coinciden
+    function checkForMatch() {
+      const [first, second] = selectedCards;
+      if (first.card.pairId === second.card.pairId && first.card.type !== second.card.type) {
+        // Es un match: marca ambas tarjetas como emparejadas
+        cards[first.index].isMatched = true;
+        cards[second.index].isMatched = true;
+        selectedCards = [];
+        renderCards();
+        // Verifica si se han emparejado todas las tarjetas
+        if (cards.every(card => card.isMatched)) {
+          clearInterval(timerInterval);
+          updateTimer();
+          alert("¡Felicidades! Completaste el puzzle en " + document.getElementById('timer').textContent.split(' ')[1] + " segundos.");
+        }
+      } else {
+        // No es match: revierte el giro después de 1 segundo
+        setTimeout(() => {
+          cards[first.index].isFlipped = false;
+          cards[second.index].isFlipped = false;
+          selectedCards = [];
+          renderCards();
+        }, 1000);
+      }
+    }
+
+    // Reinicia el juego y el temporizador
+    function resetGame() {
+      clearInterval(timerInterval);
+      cards = generateCards();
+      selectedCards = [];
+      startTime = Date.now();
+      renderCards();
+      document.getElementById('timer').textContent = 'Tiempo: 0 seg';
+      timerInterval = setInterval(updateTimer, 1000);
+    }
+
+    // Configura el botón de reinicio y carga el juego al iniciar la página
+    document.getElementById('reset-btn').addEventListener('click', resetGame);
+    window.onload = resetGame;
+  </script>
+</body>
+</html>
