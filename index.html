@@ -85,18 +85,18 @@
     <!-- Las tarjetas se inyectarán aquí -->
   </div>
   <script>
-    // Array de 10 conceptos simples directamente relacionados con IA generativa
+    // Array de 10 conceptos, exactamente los indicados, con sus explicaciones
     const concepts = [
-      { id: 1, concept: "Generador de Imágenes", explanation: "Crea imágenes a partir de descripciones de texto." },
-      { id: 2, concept: "Generador de Texto", explanation: "Produce historias o respuestas basadas en instrucciones." },
-      { id: 3, concept: "Generador de Música", explanation: "Compone melodías originales usando IA." },
-      { id: 4, concept: "Estilo Artístico", explanation: "Aplica estilos de arte a imágenes generadas." },
-      { id: 5, concept: "Conversación IA", explanation: "Interactúa generando respuestas coherentes en chat." },
-      { id: 6, concept: "Prompt", explanation: "Instrucción inicial que guía la creación de contenido." },
-      { id: 7, concept: "Entrenamiento", explanation: "Proceso de enseñar a la IA con ejemplos." },
-      { id: 8, concept: "Red Neuronal", explanation: "Modelo matemático inspirado en el cerebro." },
-      { id: 9, concept: "Datos de Entrada", explanation: "Información que la IA usa para generar resultados." },
-      { id: 10, concept: "Creatividad Artificial", explanation: "Capacidad de la IA para crear contenido nuevo." }
+      { id: 1, concept: "Prompt", explanation: "Instrucción inicial que guía la creación de contenido." },
+      { id: 2, concept: "Generador de Texto", explanation: "Produce respuestas o historias a partir de entradas de texto." },
+      { id: 3, concept: "Red Neuronal", explanation: "Modelo matemático inspirado en el cerebro, usado para aprender patrones." },
+      { id: 4, concept: "Token", explanation: "Unidad mínima de texto procesada por un modelo." },
+      { id: 5, concept: "Embedding", explanation: "Representación numérica de palabras en un espacio vectorial." },
+      { id: 6, concept: "Entrenamiento", explanation: "Proceso de ajustar un modelo mediante datos de ejemplo." },
+      { id: 7, concept: "LLM", explanation: "Modelo de lenguaje extenso, entrenado con grandes cantidades de datos." },
+      { id: 8, concept: "Transformer", explanation: "Arquitectura basada en mecanismos de atención para procesar secuencias." },
+      { id: 9, concept: "IA Generativa", explanation: "Genera contenido original utilizando técnicas de inteligencia artificial." },
+      { id: 10, concept: "Aprendizaje no supervisado", explanation: "Método de aprendizaje que identifica patrones sin usar etiquetas." }
     ];
 
     let cards = [];
@@ -201,7 +201,8 @@
         if (cards.every(card => card.isMatched)) {
           clearInterval(timerInterval);
           updateTimer();
-          alert("¡Felicidades! Completaste el puzzle en " + document.getElementById('timer').textContent.split(' ')[1] + " segundos.");
+          const finalTime = document.getElementById('timer').textContent.split(' ')[1];
+          alert("¡Felicidades! Completaste el puzzle en " + finalTime + " segundos.");
         }
       } else {
         // No es match: revierte el giro después de 1 segundo
